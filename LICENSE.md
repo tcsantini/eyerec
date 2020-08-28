@@ -4,11 +4,11 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for non-commercial purposes, without fee, and without a written
 agreement is hereby granted, provided that:
 
-1) the above copyright notice, this permission notice, and the subsequent
+1. the above copyright notice, this permission notice, and the subsequent
 bibliographic references be included in all copies or substantial portions of
 the software
 
-2) the appropriate bibliographic references be made on related publications (see
+2. the appropriate bibliographic references be made on related publications (see
 CITE.me)
 
 In this context, non-commercial means not intended for use towards commercial
