@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 project(er)
 
 set(CMAKE_CXX_STANDARD 17)
+if(NOT CMAKE_BUILD_TYPE)
+    message(STATUS "No build type specified, defaulting to Release")
+    set(CMAKE_BUILD_TYPE Release)
+endif()
 
 find_package(OpenCV REQUIRED)
 
@@ -18,6 +22,6 @@ add_library(er
         )
 target_link_libraries(er ${OpenCV_LIBS})
 
-add_executable(main cpp/examples/main.cpp)
-target_link_libraries(main er ${OpenCV_LIBS})
+add_executable(track-pupil cpp/examples/track-pupil.cpp)
+target_link_libraries(track-pupil er ${OpenCV_LIBS})
 
