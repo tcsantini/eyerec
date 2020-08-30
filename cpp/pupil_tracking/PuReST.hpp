@@ -40,14 +40,9 @@ public:
         dilateKernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, { 15, 15 });
     }
     static std::string desc;
-    void track(const cv::Mat& frame,
-        const cv::Rect& roi,
-        const Pupil& previousPupil,
-        Pupil& pupil,
-        const float& userMinPupilDiameterPx = -1,
-        const float& userMaxPupilDiameterPx = -1);
-    std::string description() { return "PuReST (santini2018pure,santini2018purest)"; }
-    std::shared_ptr<PupilDetectionMethod> defaultPupilDetectionMethod() { return std::make_shared<PuRe>(); }
+    void track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupil, TrackingParameters trackingParameters);
+    std::string description() override { return "PuReST (santini2018pure,santini2018purest)"; }
+    std::shared_ptr<PupilDetectionMethod> defaultPupilDetectionMethod() override { return std::make_shared<PuRe>(); }
 
 private:
     void calculateHistogram(const cv::Mat& in, cv::Mat& histogram, const int& bins, const cv::Mat& mask = cv::Mat());

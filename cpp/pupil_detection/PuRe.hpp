@@ -123,7 +123,7 @@ public:
     PuRe();
     ~PuRe();
 
-    Pupil implDetect(const cv::Mat& frame, cv::Rect roi, const float& userMinPupilDiameterPx, const float& userMaxPupilDiameterPx) override;
+    Pupil implDetect(const cv::Mat& frame, DetectionParameters params) override;
     bool hasConfidence() override { return true; }
     bool hasCoarseLocation() override { return false; }
     std::string description() { return "PuRe (santini2018pure)"; };

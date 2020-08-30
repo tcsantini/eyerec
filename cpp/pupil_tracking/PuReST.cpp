@@ -323,9 +323,8 @@ bool PuReST::greedySearch(const cv::Mat& greedyDetectorEdges, const Pupil& baseP
     return false;
 }
 
-void PuReST::track(const cv::Mat& frame, const cv::Rect& roi, const Pupil& previousPupil, Pupil& pupil, const float& userMinPupilDiameterPx, const float& userMaxPupilDiameterPx)
+void PuReST::track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupil, TrackingParameters params)
 {
-    (void)roi;
     baseSize = { frame.cols, frame.rows };
     //baseSize = { 320, 240 };
     pupil.clear();
@@ -357,10 +356,10 @@ void PuReST::track(const cv::Mat& frame, const cv::Rect& roi, const Pupil& previ
     }
 
     estimateParameters(localScalingRatio * frame.rows, localScalingRatio * frame.cols);
-    if (userMinPupilDiameterPx > 0)
-        minPupilDiameterPx = localScalingRatio * userMinPupilDiameterPx;
-    if (userMaxPupilDiameterPx > 0)
-        maxPupilDiameterPx = localScalingRatio * userMaxPupilDiameterPx;
+    if (params.userMinPupilDiameterPx > 0)
+        minPupilDiameterPx = localScalingRatio * params.userMinPupilDiameterPx;
+    if (params.userMaxPupilDiameterPx > 0)
+        maxPupilDiameterPx = localScalingRatio * params.userMaxPupilDiameterPx;
 
     /*
 	 * From here on, we are in the resulting roi scaled to our base size coordinates

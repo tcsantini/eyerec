@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
     Mat gray;
     Mat bgr;
     Pupil pupil;
+    TrackingParameters params;
     Timestamp timestamp;
     cout << "x, y, width, height, angle, confidence, runtime_ms," << endl;
     while (true) {
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
         }
 
         auto start = high_resolution_clock::now();
-        tracker->detectAndTrack(timestamp, gray, Rect(), pupil);
+        tracker->detectAndTrack(timestamp, gray, pupil, params);
         auto runtime_ns = duration_cast<nanoseconds>(high_resolution_clock::now() - start).count();
         auto runtime_ms = static_cast<double>(1e-6 * runtime_ns);
 

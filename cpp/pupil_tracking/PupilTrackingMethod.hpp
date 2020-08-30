@@ -4,26 +4,17 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "opencv2/core.hpp"
 
 #include "PupilDetectionMethod.hpp"
-#include "utils.h"
 
-class TrackedPupil : public Pupil {
-public:
-    TrackedPupil(const Timestamp& ts, const Pupil& pupil)
-        : Pupil(pupil)
-        , ts(ts)
-    {
-    }
-
-    TrackedPupil()
-        : TrackedPupil(0, Pupil())
-    {
-    }
-
-    Timestamp ts;
+struct TrackingParameters : public DetectionParameters {
+    // Maximum time to keep found pupils in tracking buffer
+    Timestamp maxAge = 300;
+    // Minimum confidence required to track a pupil
+    float minDetectionConfidence = 0.7f;
 };
 
 class PupilTrackingMethod {
@@ -31,7 +22,7 @@ public:
     virtual ~PupilTrackingMethod() = default;
 
     // Tracking and detection logic
-    virtual void detectAndTrack(const Timestamp& ts, const cv::Mat& frame, const cv::Rect& roi, Pupil& pupil, const float& minPupilDiameterPx = -1, const float& maxPupilDiameterPx = -1);
+    virtual void detectAndTrack(const Timestamp& ts, const cv::Mat& frame, Pupil& pupil, TrackingParameters params);
 
     virtual std::string description() = 0;
 
@@ -52,13 +43,13 @@ protected:
     void reset();
 
     std::shared_ptr<PupilDetectionMethod> pupilDetectionMethod = nullptr;
-    Pupil detect(const cv::Mat& frame, const cv::Rect& roi, const float& minPupilDiameterPx, const float& maxPupilDiameterPx);
+    Pupil detect(const cv::Mat& frame, DetectionParameters params);
 
 private:
-    // Tracking implementation
-    virtual void track(const cv::Mat& frame, const cv::Rect& roi, const Pupil& previousPupil, Pupil& pupil, const float& minPupilDiameterPx = -1, const float& maxPupilDiameterPx = -1) = 0;
+    // Tracking last pupil implementation
+    virtual void track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupil, TrackingParameters params) = 0;
 
-    cv::Rect estimateTemporalROI(const Timestamp& ts, const cv::Rect& roi);
+    TrackingParameters estimateTemporalROI(const Timestamp& ts, const TrackingParameters& oldParams);
 };
 
 #endif // PUPILTRACKINGMETHOD_H

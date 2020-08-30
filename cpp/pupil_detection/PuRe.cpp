@@ -644,7 +644,7 @@ void PuRe::detect_pupil(Pupil& pupil)
 #endif
 }
 
-Pupil PuRe::implDetect(const cv::Mat& frame, cv::Rect roi, const float& userMinPupilDiameterPx, const float& userMaxPupilDiameterPx)
+Pupil PuRe::implDetect(const cv::Mat& frame, DetectionParameters params)
 {
     Pupil pupil;
 
@@ -653,14 +653,14 @@ Pupil PuRe::implDetect(const cv::Mat& frame, cv::Rect roi, const float& userMinP
     estimateParameters(
         static_cast<int>(scalingRatio * frame.rows),
         static_cast<int>(scalingRatio * frame.cols));
-    if (userMinPupilDiameterPx > 0)
-        minPupilDiameterPx = static_cast<int>(scalingRatio * userMinPupilDiameterPx);
-    if (userMaxPupilDiameterPx > 0)
-        maxPupilDiameterPx = static_cast<int>(scalingRatio * userMaxPupilDiameterPx);
+    if (params.userMinPupilDiameterPx > 0)
+        minPupilDiameterPx = static_cast<int>(scalingRatio * params.userMinPupilDiameterPx);
+    if (params.userMaxPupilDiameterPx > 0)
+        maxPupilDiameterPx = static_cast<int>(scalingRatio * params.userMaxPupilDiameterPx);
 
     // Downscaling
     Mat downscaled;
-    resize(frame(roi), downscaled, Size(), scalingRatio, scalingRatio, cv::INTER_LINEAR);
+    resize(frame(params.roi), downscaled, Size(), scalingRatio, scalingRatio, cv::INTER_LINEAR);
     normalize(downscaled, input, 0, 255, NORM_MINMAX, CV_8U);
 
     //cvtColor(input, dbg, cv::COLOR_GRAY2BGR);
@@ -685,7 +685,7 @@ Pupil PuRe::implDetect(const cv::Mat& frame, cv::Rect roi, const float& userMinP
 
     pupil.resize(1.0f / scalingRatio, 1.0f / scalingRatio);
 
-    pupil.center += Point2f(roi.tl());
+    pupil.center += Point2f(params.roi.tl());
     //imshow("dbg", dbg);
 
     return pupil;

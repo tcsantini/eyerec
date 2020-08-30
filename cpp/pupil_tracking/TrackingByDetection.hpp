@@ -7,13 +7,13 @@ template <class T>
 class TrackingByDetection : public PupilTrackingMethod {
 
 public:
-    void detectAndTrack(const Timestamp& ts, const cv::Mat& frame, const cv::Rect& roi, Pupil& pupil,
-        const float& minPupilDiameterPx = -1, const float& maxPupilDiameterPx = -1) override
-    {
-        pupil = detect(frame, roi, minPupilDiameterPx, maxPupilDiameterPx);
+    void detectAndTrack(const Timestamp& ts, const cv::Mat& frame, Pupil& pupil, TrackingParameters params) override{
+        track(frame, Pupil(), pupil, params);
     };
-    void track(const cv::Mat& frame, const cv::Rect& roi, const Pupil& previousPupil, Pupil& pupil,
-        const float& userMinPupilDiameterPx = -1, const float& userMaxPupilDiameterPx = -1){};
+    void track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupil, TrackingParameters params) override
+    {
+        pupil = detect(frame, params);
+    }
     std::string description()
     {
         if (!pupilDetectionMethod)

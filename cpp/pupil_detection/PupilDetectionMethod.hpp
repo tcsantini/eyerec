@@ -10,101 +10,33 @@
 #include <opencv2/imgproc.hpp>
 
 #include "../common/ocv_utils.hpp"
+#include "Pupil.h"
 
-class Pupil : public cv::RotatedRect {
-public:
-    static const int NoConfidence = -1;
-    static const int SmallerThanNoConfidence = NoConfidence - 1;
-
-    Pupil(const RotatedRect& outline, const float& confidence)
-        : RotatedRect(outline)
-        , confidence(confidence)
-    {
-    }
-
-    Pupil(const RotatedRect& outline)
-        : Pupil(outline, NoConfidence)
-    {
-    }
-
-    Pupil() { clear(); }
-
-    float confidence;
-
-    bool hasNoConfidence() const { return confidence <= NoConfidence; }
-
-    void clear()
-    {
-        angle = -1.0;
-        center = { -1.0, -1.0 };
-        size = { -1.0, -1.0 };
-        confidence = NoConfidence;
-    }
-
-    void resize(const float& xf, const float& yf)
-    {
-        if (valid()) {
-            center.x *= xf;
-            center.y *= yf;
-            size.width *= xf;
-            size.height *= yf;
-        }
-    }
-    void resize(const float& f)
-    {
-        if (valid()) {
-            center *= f;
-            size *= f;
-        }
-    }
-    void shift(const cv::Point2f& p)
-    {
-        if (valid())
-            center += p;
-    }
-
-    bool valid(const double& confidenceThreshold = SmallerThanNoConfidence) const
-    {
-        return center.x > 0 && center.y > 0 && size.width > 0 && size.height > 0 && confidence > confidenceThreshold;
-    }
-
-    bool hasOutline() const { return size.width > 0 && size.height > 0; }
-    float majorAxis() const { return std::max(size.width, size.height); }
-    float minorAxis() const { return std::min(size.width, size.height); }
-    float axesRatio() const
-    {
-        auto mnmx = std::minmax<float>(size.width, size.height);
-        return mnmx.first / mnmx.second;
-    }
-    float diameter() const { return majorAxis(); }
-    float circumference() const
-    {
-        float a = 0.5f * majorAxis();
-        float b = 0.5f * minorAxis();
-        return static_cast<float>(CV_PI * abs(3.0f * (a + b) - sqrt(10.0f * a * b + 3.0f * (pow(a, 2) + pow(b, 2)))));
-    }
+struct DetectionParameters {
+    // Only search within this region of interest (but the whole frame is used to derive parameters)
+    cv::Rect roi = { 0, 0, 0, 0 };
+    float userMinPupilDiameterPx = -1;
+    float userMaxPupilDiameterPx = -1;
+    // If true and the detection method doesn't implement a confidence metric, use internal confidence metric
+    bool provideConfidence = true;
 };
 
 class PupilDetectionMethod {
 public:
     virtual ~PupilDetectionMethod() = default;
 
-    Pupil detect(const cv::Mat& frame, cv::Rect roi = { 0, 0, 0, 0 }, const float& userMinPupilDiameterPx = -1,
-        const float& userMaxPupilDiameterPx = -1)
+    Pupil detect(const cv::Mat& frame, DetectionParameters params)
     {
-        sanitizeROI(frame, roi);
-        return implDetect(frame, roi, userMinPupilDiameterPx, userMaxPupilDiameterPx);
+        sanitizeROI(frame, params.roi);
+        Pupil pupil = implDetect(frame, params);
+        if (params.provideConfidence && !hasConfidence())
+            pupil.confidence = outlineContrastConfidence(frame, pupil);
+        return pupil;
     }
 
     virtual bool hasConfidence() = 0;
     virtual bool hasCoarseLocation() = 0;
     virtual std::string description() = 0;
-
-    // Pupil detection interface used in the tracking
-    Pupil detectWithConfidence(const cv::Mat& frame, cv::Rect roi = { 0, 0, 0, 0 },
-        const float& userMinPupilDiameterPx = -1, const float& userMaxPupilDiameterPx = -1);
-
-    virtual Pupil getNextCandidate() { return Pupil(); }
 
     // Generic coarse pupil detection
     static cv::Rect coarsePupilDetection(const cv::Mat& frame, const float& minCoverage = 0.5f,
@@ -120,9 +52,7 @@ public:
         std::vector<cv::Point>& validPoints, const int& dist = 3);
 
 protected:
-    virtual Pupil implDetect(const cv::Mat& frame, cv::Rect roi, const float& userMinPupilDiameterPx,
-        const float& userMaxPupilDiameterPx)
-        = 0;
+    virtual Pupil implDetect(const cv::Mat& frame, DetectionParameters params) = 0;
 
     void sanitizeROI(const cv::Mat& frame, cv::Rect& roi)
     {
