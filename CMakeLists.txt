@@ -18,7 +18,9 @@ add_library(er
         cpp/pupil_detection/PupilDetectionMethod.cpp
         cpp/pupil_detection/PuRe.cpp
         cpp/pupil_tracking/PupilTrackingMethod.cpp
+        cpp/pupil_tracking/TrackingByDetection.hpp
         cpp/pupil_tracking/PuReST.cpp
+        cpp/pupil_detection/Pupil.h
         )
 target_link_libraries(er ${OpenCV_LIBS})
 
