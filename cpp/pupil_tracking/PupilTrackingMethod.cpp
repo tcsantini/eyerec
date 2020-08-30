@@ -20,7 +20,7 @@ void PupilTrackingMethod::registerPupil(const Timestamp& ts, Pupil& pupil)
         previousPupil = TrackedPupil();
 }
 
-void PupilTrackingMethod::detectAndTrack(const Timestamp& ts, const cv::Mat& frame, const cv::Rect& roi, Pupil& pupil, std::shared_ptr<PupilDetectionMethod> pupilDetectionMethod, const float& minPupilDiameterPx, const float& maxPupilDiameterPx)
+void PupilTrackingMethod::detectAndTrack(const Timestamp& ts, const cv::Mat& frame, const cv::Rect& roi, Pupil& pupil, const float& minPupilDiameterPx, const float& maxPupilDiameterPx)
 {
     cv::Size frameSize = { frame.cols, frame.rows };
     if (expectedFrameSize != frameSize) {
@@ -46,16 +46,16 @@ void PupilTrackingMethod::detectAndTrack(const Timestamp& ts, const cv::Mat& fra
         // Detect
 
 #ifdef EXPERIMENTAL_TRACKING
-        pupil = invokeDetection(frame, estimateTemporalROI(ts, roi), pupilDetectionMethod, minPupilDiameterPx, maxPupilDiameterPx);
+        pupil = detect(frame, estimateTemporalROI(ts, roi), minPupilDiameterPx, maxPupilDiameterPx);
         // TODO: keep?
-        // If detection failed, try tracking with old
+        // If detection failed, try tracking with old (e.g., during blinks)
         if (pupil.confidence < minDetectionConfidence && !previousPupils.empty()) {
             track(frame, roi, previousPupils.back(), alternative, minPupilDiameterPx, maxPupilDiameterPx);
             if (alternative.confidence > pupil.confidence)
                 pupil = alternative;
         }
 #else
-        pupil = invokeDetection(frame, roi, pupilDetectionMethod, minPupilDiameterPx, maxPupilDiameterPx);
+        pupil = detect(frame, roi, minPupilDiameterPx, maxPupilDiameterPx);
 #endif
 
     } else {
@@ -67,7 +67,7 @@ void PupilTrackingMethod::detectAndTrack(const Timestamp& ts, const cv::Mat& fra
         // TODO: keep?
         // If tracking failed, try detection again
         if (pupil.confidence < minDetectionConfidence) {
-            alternative = invokeDetection(frame, estimateTemporalROI(ts, roi), pupilDetectionMethod, minPupilDiameterPx, maxPupilDiameterPx);
+            alternative = detect(frame, estimateTemporalROI(ts, roi), minPupilDiameterPx, maxPupilDiameterPx);
             if (alternative.confidence > pupil.confidence)
                 pupil = alternative;
         }
@@ -83,11 +83,11 @@ void PupilTrackingMethod::detectAndTrack(const Timestamp& ts, const cv::Mat& fra
     registerPupil(ts, pupil);
 }
 
-Pupil PupilTrackingMethod::invokeDetection(const cv::Mat& frame, const cv::Rect& roi, std::shared_ptr<PupilDetectionMethod> pupilDetectionMethod, const float& minPupilDiameterPx, const float& maxPupilDiameterPx)
+Pupil PupilTrackingMethod::detect(const cv::Mat& frame, const cv::Rect& roi, const float& minPupilDiameterPx, const float& maxPupilDiameterPx)
 {
-    if (pupilDetectionMethod)
-        return pupilDetectionMethod->detectWithConfidence(frame, roi, minPupilDiameterPx, maxPupilDiameterPx);
-    return detect(frame, roi, minPupilDiameterPx, maxPupilDiameterPx);
+    if (!pupilDetectionMethod)
+        setPupilDetectionMethod(defaultPupilDetectionMethod());
+    return pupilDetectionMethod->detectWithConfidence(frame, roi, minPupilDiameterPx, maxPupilDiameterPx);
 }
 
 cv::Rect PupilTrackingMethod::estimateTemporalROI(const Timestamp& ts, const cv::Rect& roi)

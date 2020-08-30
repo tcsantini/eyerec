@@ -280,3 +280,12 @@ float PupilDetectionMethod::ellipseDistanceConfidence(const Pupil& pupil, const 
     }
     return validPoints.size() / static_cast<float>(edgePoints.size());
 }
+
+Pupil PupilDetectionMethod::detectWithConfidence(const Mat& frame, cv::Rect roi, const float& userMinPupilDiameterPx,
+    const float& userMaxPupilDiameterPx)
+{
+    Pupil pupil = detect(frame, roi, userMinPupilDiameterPx, userMaxPupilDiameterPx);
+    if (!hasConfidence())
+        pupil.confidence = outlineContrastConfidence(frame, pupil);
+    return pupil;
+}

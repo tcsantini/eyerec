@@ -89,7 +89,8 @@ class PupilDetectionMethod {
 public:
     virtual ~PupilDetectionMethod() = default;
 
-    Pupil detect(const cv::Mat& frame, cv::Rect roi = { 0, 0, 0, 0 }, const float& userMinPupilDiameterPx = -1, const float& userMaxPupilDiameterPx = -1)
+    Pupil detect(const cv::Mat& frame, cv::Rect roi = { 0, 0, 0, 0 }, const float& userMinPupilDiameterPx = -1,
+        const float& userMaxPupilDiameterPx = -1)
     {
         sanitizeROI(frame, roi);
         return implDetect(frame, roi, userMinPupilDiameterPx, userMaxPupilDiameterPx);
@@ -100,28 +101,28 @@ public:
     virtual std::string description() = 0;
 
     // Pupil detection interface used in the tracking
-    Pupil detectWithConfidence(const cv::Mat& frame, cv::Rect roi = { 0, 0, 0, 0 }, const float& userMinPupilDiameterPx = -1, const float& userMaxPupilDiameterPx = -1)
-    {
-        Pupil pupil = detect(frame, roi, userMinPupilDiameterPx, userMaxPupilDiameterPx);
-        if (!hasConfidence())
-            pupil.confidence = outlineContrastConfidence(frame, pupil);
-        return pupil;
-    }
+    Pupil detectWithConfidence(const cv::Mat& frame, cv::Rect roi = { 0, 0, 0, 0 },
+        const float& userMinPupilDiameterPx = -1, const float& userMaxPupilDiameterPx = -1);
 
     virtual Pupil getNextCandidate() { return Pupil(); }
 
     // Generic coarse pupil detection
-    static cv::Rect coarsePupilDetection(const cv::Mat& frame, const float& minCoverage = 0.5f, const int& workingWidth = 60, const int& workingHeight = 40);
+    static cv::Rect coarsePupilDetection(const cv::Mat& frame, const float& minCoverage = 0.5f,
+        const int& workingWidth = 60, const int& workingHeight = 40);
 
     // Generic confidence metrics
     static float outlineContrastConfidence(const cv::Mat& frame, const Pupil& pupil, const int& bias = 5);
-    static float edgeRatioConfidence(const cv::Mat& edgeImage, const Pupil& pupil, std::vector<cv::Point>& edgePoints, const int& band = 5);
+    static float edgeRatioConfidence(const cv::Mat& edgeImage, const Pupil& pupil, std::vector<cv::Point>& edgePoints,
+        const int& band = 5);
     static float angularSpreadConfidence(const std::vector<cv::Point>& points, const cv::Point2f& center);
     static float aspectRatioConfidence(const Pupil& pupil);
-    static float ellipseDistanceConfidence(const Pupil& pupil, const std::vector<cv::Point>& edgePoints, std::vector<cv::Point>& validPoints, const int& dist = 3);
+    static float ellipseDistanceConfidence(const Pupil& pupil, const std::vector<cv::Point>& edgePoints,
+        std::vector<cv::Point>& validPoints, const int& dist = 3);
 
 protected:
-    virtual Pupil implDetect(const cv::Mat& frame, cv::Rect roi, const float& userMinPupilDiameterPx, const float& userMaxPupilDiameterPx) = 0;
+    virtual Pupil implDetect(const cv::Mat& frame, cv::Rect roi, const float& userMinPupilDiameterPx,
+        const float& userMaxPupilDiameterPx)
+        = 0;
 
     void sanitizeROI(const cv::Mat& frame, cv::Rect& roi)
     {

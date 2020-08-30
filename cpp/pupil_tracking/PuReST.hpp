@@ -40,19 +40,42 @@ public:
         dilateKernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, { 15, 15 });
     }
     static std::string desc;
-    void track(const cv::Mat& frame, const cv::Rect& roi, const Pupil& previousPupil, Pupil& pupil, const float& userMinPupilDiameterPx = -1, const float& userMaxPupilDiameterPx = -1);
+    void track(const cv::Mat& frame,
+        const cv::Rect& roi,
+        const Pupil& previousPupil,
+        Pupil& pupil,
+        const float& userMinPupilDiameterPx = -1,
+        const float& userMaxPupilDiameterPx = -1);
     std::string description() { return "PuReST (santini2018pure,santini2018purest)"; }
+    std::shared_ptr<PupilDetectionMethod> defaultPupilDetectionMethod() { return std::make_shared<PuRe>(); }
 
 private:
     void calculateHistogram(const cv::Mat& in, cv::Mat& histogram, const int& bins, const cv::Mat& mask = cv::Mat());
-    void getThresholds(const cv::Mat& input, const cv::Mat& histogram, const Pupil& pupil, int& lowTh, int& highTh, cv::Mat& bright, cv::Mat& dark);
+    void getThresholds(const cv::Mat& input,
+        const cv::Mat& histogram,
+        const Pupil& pupil,
+        int& lowTh,
+        int& highTh,
+        cv::Mat& bright,
+        cv::Mat& dark);
     cv::Mat dilateKernel;
     cv::Mat openKernel;
     Pupil outlineSeedPupil;
 
-    bool greedySearch(const cv::Mat& greedyDetectorEdges, const Pupil& basePupil, const cv::Mat& dark, const cv::Mat& bright, Pupil& pupil, const float& localMinPupilDiameterPx);
-    bool trackOutline(const cv::Mat& outlineTrackerEdges, const Pupil& basePupil, Pupil& pupil, const float& localScalingRatio, const float& minOutlineConfidence = 0.65f);
-    void generateCombinations(const std::vector<GreedyCandidate>& seeds, std::vector<GreedyCandidate>& candidates, const int length);
+    bool greedySearch(const cv::Mat& greedyDetectorEdges,
+        const Pupil& basePupil,
+        const cv::Mat& dark,
+        const cv::Mat& bright,
+        Pupil& pupil,
+        const float& localMinPupilDiameterPx);
+    bool trackOutline(const cv::Mat& outlineTrackerEdges,
+        const Pupil& basePupil,
+        Pupil& pupil,
+        const float& localScalingRatio,
+        const float& minOutlineConfidence = 0.65f);
+    void generateCombinations(const std::vector<GreedyCandidate>& seeds,
+        std::vector<GreedyCandidate>& candidates,
+        const int length);
     float confidence(const cv::Mat frame, const Pupil& pupil, const std::vector<cv::Point> points);
 };
 

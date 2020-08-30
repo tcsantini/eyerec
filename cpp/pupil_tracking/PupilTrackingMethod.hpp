@@ -7,8 +7,8 @@
 
 #include "opencv2/core.hpp"
 
-#include "utils.h"
 #include "PupilDetectionMethod.hpp"
+#include "utils.h"
 
 class TrackedPupil : public Pupil {
 public:
@@ -31,9 +31,13 @@ public:
     virtual ~PupilTrackingMethod() = default;
 
     // Tracking and detection logic
-    virtual void detectAndTrack(const Timestamp& ts, const cv::Mat& frame, const cv::Rect& roi, Pupil& pupil, std::shared_ptr<PupilDetectionMethod> pupilDetectionMethod = nullptr, const float& minPupilDiameterPx = -1, const float& maxPupilDiameterPx = -1);
+    virtual void detectAndTrack(const Timestamp& ts, const cv::Mat& frame, const cv::Rect& roi, Pupil& pupil, const float& minPupilDiameterPx = -1, const float& maxPupilDiameterPx = -1);
 
     virtual std::string description() = 0;
+
+    virtual std::shared_ptr<PupilDetectionMethod> defaultPupilDetectionMethod() = 0;
+
+    void setPupilDetectionMethod(std::shared_ptr<PupilDetectionMethod> method) { pupilDetectionMethod = method; }
 
 protected:
     cv::Size expectedFrameSize = { 0, 0 };
@@ -47,21 +51,13 @@ protected:
 
     void reset();
 
-private:
-    // Detection implementation (can be overridden by providing a valid pointer to the detectAndTrack method, allowing the user to mix detectors and trackers)
-    virtual Pupil detect(const cv::Mat& frame, const cv::Rect& roi, const float& minPupilDiameterPx = -1, const float& maxPupilDiameterPx = -1)
-    {
-        (void)frame;
-        (void)roi;
-        (void)minPupilDiameterPx;
-        (void)maxPupilDiameterPx;
-        return Pupil();
-    }
+    std::shared_ptr<PupilDetectionMethod> pupilDetectionMethod = nullptr;
+    Pupil detect(const cv::Mat& frame, const cv::Rect& roi, const float& minPupilDiameterPx, const float& maxPupilDiameterPx);
 
+private:
     // Tracking implementation
     virtual void track(const cv::Mat& frame, const cv::Rect& roi, const Pupil& previousPupil, Pupil& pupil, const float& minPupilDiameterPx = -1, const float& maxPupilDiameterPx = -1) = 0;
 
-    Pupil invokeDetection(const cv::Mat& frame, const cv::Rect& roi, std::shared_ptr<PupilDetectionMethod> pupilDetectionMethod, const float& minPupilDiameterPx, const float& maxPupilDiameterPx);
     cv::Rect estimateTemporalROI(const Timestamp& ts, const cv::Rect& roi);
 };
 
