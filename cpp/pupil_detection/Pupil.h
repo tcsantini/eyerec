@@ -53,13 +53,14 @@ public:
     }
     void shift(const cv::Point2f& p)
     {
-        if (valid())
-            center += p;
+        if (valid()) center += p;
     }
 
-    bool valid(const double& confidenceThreshold = SmallerThanNoConfidence) const
+    bool valid(
+        const double& confidenceThreshold = SmallerThanNoConfidence) const
     {
-        return center.x > 0 && center.y > 0 && size.width > 0 && size.height > 0 && confidence > confidenceThreshold;
+        return center.x > 0 && center.y > 0 && size.width > 0 && size.height > 0
+            && confidence > confidenceThreshold;
     }
 
     bool hasOutline() const { return size.width > 0 && size.height > 0; }
@@ -75,7 +76,9 @@ public:
     {
         float a = 0.5f * majorAxis();
         float b = 0.5f * minorAxis();
-        return static_cast<float>(CV_PI * abs(3.0f * (a + b) - sqrt(10.0f * a * b + 3.0f * (pow(a, 2) + pow(b, 2)))));
+        return static_cast<float>(CV_PI
+            * abs(3.0f * (a + b)
+                  - sqrt(10.0f * a * b + 3.0f * (pow(a, 2) + pow(b, 2)))));
     }
 };
 
@@ -95,4 +98,4 @@ public:
     Timestamp ts;
 };
 
-#endif //ER_CPP_PUPIL_DETECTION_PUPIL_H
+#endif // ER_CPP_PUPIL_DETECTION_PUPIL_H

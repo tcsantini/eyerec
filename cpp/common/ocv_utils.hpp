@@ -23,14 +23,18 @@
 /*
  * enums
  */
-enum CVFlip { CV_FLIP_BOTH = -1,
+enum CVFlip {
+    CV_FLIP_BOTH = -1,
     CV_FLIP_VERTICAL = 0,
     CV_FLIP_HORIZONTAL = 1,
-    CV_FLIP_NONE = 2 };
+    CV_FLIP_NONE = 2
+};
 
 // Rotated Rect helpers
 void sincos(int angle, float& cosval, float& sinval);
-std::vector<cv::Point> ellipse2Points(const cv::RotatedRect& ellipse, const int& delta = 1);
-void distFromPoints(const cv::RotatedRect& ellipse, std::vector<cv::Point> points, std::vector<double>& distances);
+std::vector<cv::Point> ellipse2Points(
+    const cv::RotatedRect& ellipse, const int& delta = 1);
+void distFromPoints(const cv::RotatedRect& ellipse,
+    std::vector<cv::Point> points, std::vector<double>& distances);
 
 #endif // OCV_UTILS_H

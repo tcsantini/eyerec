@@ -22,13 +22,18 @@ public:
     virtual ~PupilTrackingMethod() = default;
 
     // Tracking and detection logic
-    virtual void detectAndTrack(const Timestamp& ts, const cv::Mat& frame, Pupil& pupil, TrackingParameters params);
+    virtual void detectAndTrack(const Timestamp& ts, const cv::Mat& frame,
+        Pupil& pupil, TrackingParameters params);
 
     virtual std::string description() = 0;
 
-    virtual std::shared_ptr<PupilDetectionMethod> defaultPupilDetectionMethod() = 0;
+    virtual std::shared_ptr<PupilDetectionMethod> defaultPupilDetectionMethod()
+        = 0;
 
-    void setPupilDetectionMethod(std::shared_ptr<PupilDetectionMethod> method) { pupilDetectionMethod = method; }
+    void setPupilDetectionMethod(std::shared_ptr<PupilDetectionMethod> method)
+    {
+        pupilDetectionMethod = method;
+    }
 
 protected:
     cv::Size expectedFrameSize = { 0, 0 };
@@ -47,9 +52,12 @@ protected:
 
 private:
     // Tracking last pupil implementation
-    virtual void track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupil, TrackingParameters params) = 0;
+    virtual void track(const cv::Mat& frame, const Pupil& previousPupil,
+        Pupil& pupil, TrackingParameters params)
+        = 0;
 
-    TrackingParameters estimateTemporalROI(const Timestamp& ts, const TrackingParameters& oldParams);
+    TrackingParameters estimateTemporalROI(
+        const Timestamp& ts, const TrackingParameters& oldParams);
 };
 
 #endif // PUPILTRACKINGMETHOD_H

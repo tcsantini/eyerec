@@ -56,7 +56,8 @@ public:
     {
         this->points = points;
     }
-    bool isValid(const cv::Mat& intensityImage, const int& minPupilDiameterPx, const int& maxPupilDiameterPx, const int bias = 5);
+    bool isValid(const cv::Mat& intensityImage, const int& minPupilDiameterPx,
+        const int& maxPupilDiameterPx, const int bias = 5);
     void estimateOutline();
     bool isCurvatureValid();
 
@@ -67,10 +68,7 @@ public:
         return sorted.first / sorted.second;
     }
 
-    bool operator<(const PupilCandidate& c) const
-    {
-        return (score < c.score);
-    }
+    bool operator<(const PupilCandidate& c) const { return (score < c.score); }
 
     bool fastValidityCheck(const int& maxPupilDiameterPx);
 
@@ -78,20 +76,23 @@ public:
 
     bool validityCheck(const cv::Mat& intensityImage, const int& bias);
 
-    bool validateOutlineContrast(const cv::Mat& intensityImage, const int& bias);
+    bool validateOutlineContrast(
+        const cv::Mat& intensityImage, const int& bias);
     bool drawOutlineContrast(const cv::Mat& intensityImage, const int& bias);
 
     void updateScore()
     {
-        score = 0.33f * aspectRatio + 0.33f * anchorDistribution + 0.34f * outlineContrast;
+        score = 0.33f * aspectRatio + 0.33f * anchorDistribution
+            + 0.34f * outlineContrast;
         // ElSe style
-        //score = (1-innerMeanIntensity)*(1+abs(outline.size.height-outline.size.width));
+        // score =
+        // (1-innerMeanIntensity)*(1+abs(outline.size.height-outline.size.width));
     }
 
     void draw(cv::Mat out)
     {
-        //cv::ellipse(out, outline, cv::Scalar(0,255,0));
-        //cv::rectangle(out, combinationRegion, cv::Scalar(0,255,255));
+        // cv::ellipse(out, outline, cv::Scalar(0,255,0));
+        // cv::rectangle(out, combinationRegion, cv::Scalar(0,255,255));
         for (unsigned int i = 0; i < points.size(); i++)
             cv::circle(out, points[i], 1, cv::Scalar(0, 255, 255));
 
@@ -165,14 +166,21 @@ protected:
     // Canny
     cv::Mat blurred, dx, dy, magnitude;
     cv::Mat edgeType, edge;
-    cv::Mat canny(const cv::Mat& in, const bool blur = true, const bool useL2 = true, const int bins = 64, const float nonEdgePixelsRatio = 0.7f, const float lowHighThresholdRatio = 0.4f);
+    cv::Mat canny(const cv::Mat& in, const bool blur = true,
+        const bool useL2 = true, const int bins = 64,
+        const float nonEdgePixelsRatio = 0.7f,
+        const float lowHighThresholdRatio = 0.4f);
 
     // Edge filtering
     void filterEdges(cv::Mat& edges);
 
     // Remove duplicates (e.g., from closed loops)
-    int pointHash(const cv::Point& p, const int cols) { return p.y * cols + p.x; }
-    void removeDuplicates(std::vector<std::vector<cv::Point>>& curves, const int& cols)
+    int pointHash(const cv::Point& p, const int cols)
+    {
+        return p.y * cols + p.x;
+    }
+    void removeDuplicates(
+        std::vector<std::vector<cv::Point>>& curves, const int& cols)
     {
         std::map<int, uchar> contourMap;
         for (size_t i = curves.size(); i-- > 0;) {
@@ -185,9 +193,12 @@ protected:
         }
     }
 
-    void findPupilEdgeCandidates(const cv::Mat& intensityImage, cv::Mat& edge, std::vector<PupilCandidate>& candidates);
-    void combineEdgeCandidates(const cv::Mat& intensityImage, cv::Mat& edge, std::vector<PupilCandidate>& candidates);
-    void searchInnerCandidates(std::vector<PupilCandidate>& candidates, PupilCandidate& candidate);
+    void findPupilEdgeCandidates(const cv::Mat& intensityImage, cv::Mat& edge,
+        std::vector<PupilCandidate>& candidates);
+    void combineEdgeCandidates(const cv::Mat& intensityImage, cv::Mat& edge,
+        std::vector<PupilCandidate>& candidates);
+    void searchInnerCandidates(
+        std::vector<PupilCandidate>& candidates, PupilCandidate& candidate);
 
     cv::Mat input;
     cv::Mat dbg;

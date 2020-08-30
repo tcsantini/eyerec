@@ -10,10 +10,12 @@ using namespace std;
 using namespace chrono;
 using namespace cv;
 
-static void drawOverlay(cv::Mat bgr, const Pupil& pupil, const float minConfidence = 0.66)
+static void drawOverlay(
+    cv::Mat bgr, const Pupil& pupil, const float minConfidence = 0.66)
 {
     if (pupil.confidence > minConfidence) {
-        float g = 255 * (pupil.confidence - minConfidence) / (1 - minConfidence);
+        float g
+            = 255 * (pupil.confidence - minConfidence) / (1 - minConfidence);
         float r = 255 - g;
         ellipse(bgr, pupil, Scalar(0, g, r), 2);
     }
@@ -29,8 +31,7 @@ static void printUsageAndExit(char* argv[])
 
 int main(int argc, char* argv[])
 {
-    if (argc < 3)
-        printUsageAndExit(argv);
+    if (argc < 3) printUsageAndExit(argv);
 
     // Pick algorithm
     string algorithm = toLowerCase(string(argv[1]));
@@ -63,8 +64,7 @@ int main(int argc, char* argv[])
     cout << "x, y, width, height, angle, confidence, runtime_ms," << endl;
     while (true) {
         (*cap) >> bgr;
-        if (bgr.empty())
-            break;
+        if (bgr.empty()) break;
 
         timestamp = cap->get(CAP_PROP_POS_MSEC);
 
@@ -78,13 +78,14 @@ int main(int argc, char* argv[])
 
         auto start = high_resolution_clock::now();
         tracker->detectAndTrack(timestamp, gray, pupil, params);
-        auto runtime_ns = duration_cast<nanoseconds>(high_resolution_clock::now() - start).count();
+        auto runtime_ns
+            = duration_cast<nanoseconds>(high_resolution_clock::now() - start)
+                  .count();
         auto runtime_ms = static_cast<double>(1e-6 * runtime_ns);
 
-        auto items = vector<double>({ pupil.center.x, pupil.center.y,
-            pupil.size.width, pupil.size.height,
-            pupil.angle, pupil.confidence,
-            runtime_ms });
+        auto items
+            = vector<double>({ pupil.center.x, pupil.center.y, pupil.size.width,
+                pupil.size.height, pupil.angle, pupil.confidence, runtime_ms });
         for (const auto item : items)
             cout << item << ", ";
         cout << endl;
@@ -92,7 +93,6 @@ int main(int argc, char* argv[])
         drawOverlay(bgr, pupil);
         imshow("dbg", bgr);
         char c = (char)waitKey(1);
-        if (c == 'q')
-            break;
+        if (c == 'q') break;
     }
 }

@@ -6,9 +6,11 @@ using namespace cv;
 //#define DBG_COARSE_PUPIL_DETECTION
 //#define DBG_OUTLINE_CONTRAST
 
-Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame, const float& minCoverage, const int& workingWidth, const int& workingHeight)
+Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame,
+    const float& minCoverage, const int& workingWidth, const int& workingHeight)
 {
-    // We can afford to work on a very small input for haar features, but retain the aspect ratio
+    // We can afford to work on a very small input for haar features, but retain
+    // the aspect ratio
     float xr = frame.cols / static_cast<float>(workingWidth);
     float yr = frame.rows / static_cast<float>(workingHeight);
     float r = max(xr, yr);
@@ -19,7 +21,8 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame, const float& m
     auto ystep = static_cast<int>(ceil(max(0.01f * downscaled.rows, 1.0f)));
     auto xstep = static_cast<int>(ceil(max(0.01f * downscaled.cols, 1.0f)));
 
-    auto d = static_cast<float>(sqrt(pow(downscaled.rows, 2) + pow(downscaled.cols, 2)));
+    auto d = static_cast<float>(
+        sqrt(pow(downscaled.rows, 2) + pow(downscaled.cols, 2)));
 
     // Pupil radii is based on PuRe assumptions
     auto min_r = static_cast<int>((0.5 * 0.07 * d));
@@ -29,12 +32,13 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame, const float& m
     // TODO: padding so we consider the borders as well!
 
     /* Haar-like feature suggested by Swirski. For details, see
-	 * Świrski, Lech, Andreas Bulling, and Neil Dodgson.
-	 * "Robust real-time pupil tracking in highly off-axis images."
-	 * Proceedings of the Symposium on Eye Tracking Research and Applications. ACM, 2012.
-	 *
-	 * However, we collect a per-pixel maxima instead of the global one
-	*/
+     * Świrski, Lech, Andreas Bulling, and Neil Dodgson.
+     * "Robust real-time pupil tracking in highly off-axis images."
+     * Proceedings of the Symposium on Eye Tracking Research and Applications.
+     * ACM, 2012.
+     *
+     * However, we collect a per-pixel maxima instead of the global one
+     */
     Mat itg;
     integral(downscaled, itg, CV_32S);
     Mat res = Mat::zeros(downscaled.rows, downscaled.cols, CV_32F);
@@ -70,26 +74,28 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame, const float& m
                 ib.x = x + r;
                 ic.x = x + r;
                 id.x = x - r;
-                int inner = itg.ptr<int>(ic.y)[ic.x] + itg.ptr<int>(ia.y)[ia.x] - itg.ptr<int>(ib.y)[ib.x] - itg.ptr<int>(id.y)[id.x];
-                int outer = itg.ptr<int>(oc.y)[oc.x] + itg.ptr<int>(oa.y)[oa.x] - itg.ptr<int>(ob.y)[ob.x] - itg.ptr<int>(od.y)[od.x] - inner;
+                int inner = itg.ptr<int>(ic.y)[ic.x] + itg.ptr<int>(ia.y)[ia.x]
+                    - itg.ptr<int>(ib.y)[ib.x] - itg.ptr<int>(id.y)[id.x];
+                int outer = itg.ptr<int>(oc.y)[oc.x] + itg.ptr<int>(oa.y)[oa.x]
+                    - itg.ptr<int>(ob.y)[ob.x] - itg.ptr<int>(od.y)[od.x]
+                    - inner;
 
                 float inner_mean = inner_norm * inner;
                 float outer_mean = outer_norm * outer;
                 float response = (outer_mean - inner_mean);
 
-                if (response < 0.5 * best_response)
-                    continue;
+                if (response < 0.5 * best_response) continue;
 
-                if (response < 0.5 * best_response)
-                    continue;
+                if (response < 0.5 * best_response) continue;
 
-                if (response > best_response)
-                    best_response = response;
+                if (response > best_response) best_response = response;
 
                 if (response > res.ptr<float>(y)[x]) {
                     res.ptr<float>(y)[x] = response;
-                    // The pupil is too small, the padding too large; we combine them.
-                    candidates.emplace_back(make_pair(Rect(0.5 * (ia + oa), 0.5 * (ic + oc)), response));
+                    // The pupil is too small, the padding too large; we combine
+                    // them.
+                    candidates.emplace_back(make_pair(
+                        Rect(0.5 * (ia + oa), 0.5 * (ic + oc)), response));
                 }
             }
         }
@@ -109,7 +115,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame, const float& m
     Rect coarse;
     auto minWidth = static_cast<int>(minCoverage * downscaled.cols);
     auto minHeight = static_cast<int>(minCoverage * downscaled.rows);
-    //for (unsigned int i = 0; i < candidates.size(); i++) {
+    // for (unsigned int i = 0; i < candidates.size(); i++) {
     for (auto& c : candidates) {
         if (coarse.area() == 0)
             coarse = c.first;
@@ -118,8 +124,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame, const float& m
 #ifdef DBG_COARSE_PUPIL_DETECTION
         rectangle(dbg, candidates[i].first, Scalar(0, 255, 255));
 #endif
-        if (coarse.width > minWidth && coarse.height > minHeight)
-            break;
+        if (coarse.width > minWidth && coarse.height > minHeight) break;
     }
 
 #ifdef DBG_COARSE_PUPIL_DETECTION
@@ -137,8 +142,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame, const float& m
     // Sanity test
     Rect imRoi = Rect(0, 0, frame.cols, frame.rows);
     coarse &= imRoi;
-    if (coarse.area() == 0)
-        return imRoi;
+    if (coarse.area() == 0) return imRoi;
 
     return coarse;
 }
@@ -149,10 +153,10 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat& frame, const float& m
  * PuRe: Robust pupil detection for real-time pervasive eye tracking.
  * Computer Vision and Image Understanding. 10.1016/j.cviu.2018.02.002.
  */
-float PupilDetectionMethod::outlineContrastConfidence(const Mat& frame, const Pupil& pupil, const int& bias)
+float PupilDetectionMethod::outlineContrastConfidence(
+    const Mat& frame, const Pupil& pupil, const int& bias)
 {
-    if (!pupil.hasOutline())
-        return Pupil::NoConfidence;
+    if (!pupil.hasOutline()) return Pupil::NoConfidence;
 
     Rect boundaries = { 0, 0, frame.cols, frame.rows };
     float delta = 0.15f * pupil.minorAxis();
@@ -177,8 +181,7 @@ float PupilDetectionMethod::outlineContrastConfidence(const Mat& frame, const Pu
         Point2f end = Point2f(p) + d;
 
         evaluated++;
-        if (!(boundaries.contains(start) && boundaries.contains(end)))
-            continue;
+        if (!(boundaries.contains(start) && boundaries.contains(end))) continue;
 
         LineIterator inner(frame, start, p);
         LineIterator outer(frame, p, end);
@@ -193,8 +196,7 @@ float PupilDetectionMethod::outlineContrastConfidence(const Mat& frame, const Pu
             outerMean += *(*outer);
         outerMean /= outer.count;
 
-        if (innerMean > outerMean + bias)
-            validCount++;
+        if (innerMean > outerMean + bias) validCount++;
 
 #ifdef DBG_OUTLINE_CONTRAST
         if (innerMean > outerMean + bias)
@@ -204,8 +206,7 @@ float PupilDetectionMethod::outlineContrastConfidence(const Mat& frame, const Pu
 #endif
     }
 
-    if (evaluated == 0)
-        return 0;
+    if (evaluated == 0) return 0;
 
 #ifdef DBG_OUTLINE_CONTRAST
     cv::imshow("Outline Contrast Debug", tmp);
@@ -214,7 +215,8 @@ float PupilDetectionMethod::outlineContrastConfidence(const Mat& frame, const Pu
     return validCount / static_cast<float>(evaluated);
 }
 
-float PupilDetectionMethod::angularSpreadConfidence(const vector<Point>& points, const Point2f& center)
+float PupilDetectionMethod::angularSpreadConfidence(
+    const vector<Point>& points, const Point2f& center)
 {
     enum {
         Q0 = 0,
@@ -238,7 +240,8 @@ float PupilDetectionMethod::angularSpreadConfidence(const vector<Point>& points,
                 anchorPointSlices.set(Q2);
         }
     }
-    return anchorPointSlices.count() / static_cast<float>(anchorPointSlices.size());
+    return anchorPointSlices.count()
+        / static_cast<float>(anchorPointSlices.size());
 }
 
 float PupilDetectionMethod::aspectRatioConfidence(const Pupil& pupil)
@@ -246,10 +249,10 @@ float PupilDetectionMethod::aspectRatioConfidence(const Pupil& pupil)
     return pupil.minorAxis() / static_cast<float>(pupil.majorAxis());
 }
 
-float PupilDetectionMethod::edgeRatioConfidence(const Mat& edgeImage, const Pupil& pupil, vector<Point>& edgePoints, const int& band)
+float PupilDetectionMethod::edgeRatioConfidence(const Mat& edgeImage,
+    const Pupil& pupil, vector<Point>& edgePoints, const int& band)
 {
-    if (!pupil.valid())
-        return Pupil::NoConfidence;
+    if (!pupil.valid()) return Pupil::NoConfidence;
     Mat inBandEdges = Mat::zeros(edgeImage.rows, edgeImage.cols, CV_8U);
     ellipse(inBandEdges, pupil, Scalar(255), band);
     bitwise_and(edgeImage, inBandEdges, inBandEdges);
@@ -257,25 +260,24 @@ float PupilDetectionMethod::edgeRatioConfidence(const Mat& edgeImage, const Pupi
     return min<float>(edgePoints.size() / pupil.circumference(), 1.0);
 }
 
-/* Measures the confidence for a pupil based on the ratio of edge points that are
- * close enough to the ellipsed fitted to those points
- * For details, see:
+/* Measures the confidence for a pupil based on the ratio of edge points that
+ * are close enough to the ellipsed fitted to those points For details, see:
  * Swirski, Lech, and Neil Dodgson.
- * "A fully-automatic, temporal approach to single camera, glint-free 3d eye model fitting."
- * Proc. PETMEI (2013).
+ * "A fully-automatic, temporal approach to single camera, glint-free 3d eye
+ * model fitting." Proc. PETMEI (2013).
  *
  * WARNING: not yet tested!
  */
-float PupilDetectionMethod::ellipseDistanceConfidence(const Pupil& pupil, const std::vector<cv::Point>& edgePoints, std::vector<cv::Point>& validPoints, const int& dist)
+float PupilDetectionMethod::ellipseDistanceConfidence(const Pupil& pupil,
+    const std::vector<cv::Point>& edgePoints,
+    std::vector<cv::Point>& validPoints, const int& dist)
 {
-    if (!pupil.valid() || edgePoints.empty())
-        return Pupil::NoConfidence;
+    if (!pupil.valid() || edgePoints.empty()) return Pupil::NoConfidence;
     vector<double> distances;
     distFromPoints(pupil, edgePoints, distances);
     validPoints.clear();
     for (int i = 0; i < distances.size(); i++) {
-        if (abs(distances[i]) > dist)
-            continue;
+        if (abs(distances[i]) > dist) continue;
         validPoints.push_back(edgePoints[i]);
     }
     return validPoints.size() / static_cast<float>(edgePoints.size());

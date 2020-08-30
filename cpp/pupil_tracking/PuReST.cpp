@@ -14,31 +14,33 @@
  * In this context, non-commercial means not intended for use towards commercial
  * advantage (e.g., as complement to or part of a product) or monetary
  * compensation. The copyright holder reserves the right to decide whether a
- * certain use classifies as commercial or not. For commercial use, please contact
- * the copyright holders.
+ * certain use classifies as commercial or not. For commercial use, please
+ * contact the copyright holders.
  *
  * REFERENCES:
  *
- * Thiago Santini, Wolfgang Fuhl, Enkelejda Kasneci, PuReST: Robust pupil tracking
- * for real-time pervasive eye tracking, Symposium on Eye Tracking Research and
- * Applications (ETRA), 2018, https://doi.org/10.1145/3204493.3204578.
+ * Thiago Santini, Wolfgang Fuhl, Enkelejda Kasneci, PuReST: Robust pupil
+ * tracking for real-time pervasive eye tracking, Symposium on Eye Tracking
+ * Research and Applications (ETRA), 2018,
+ * https://doi.org/10.1145/3204493.3204578.
  *
- * Thiago Santini, Wolfgang Fuhl, Enkelejda Kasneci, PuRe: Robust pupil detection
- * for real-time pervasive eye tracking, Computer Vision and Image Understanding,
- * 2018, ISSN 1077-3142, https://doi.org/10.1016/j.cviu.2018.02.002.
+ * Thiago Santini, Wolfgang Fuhl, Enkelejda Kasneci, PuRe: Robust pupil
+ * detection for real-time pervasive eye tracking, Computer Vision and Image
+ * Understanding, 2018, ISSN 1077-3142,
+ * https://doi.org/10.1016/j.cviu.2018.02.002.
  *
  *
  * IN NO EVENT SHALL THE AUTHORS BE LIABLE TO ANY PARTY FOR DIRECT,
- * INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
- * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF
- * THE AUTHORS HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN
+ * IF THE AUTHORS HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * THE AUTHORS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE AUTHORS
- * HAVE NO OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
- * MODIFICATIONS.
-*/
+ * PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE
+ * AUTHORS HAVE NO OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
+ * ENHANCEMENTS, OR MODIFICATIONS.
+ */
 
 #include "PuReST.hpp"
 
@@ -50,13 +52,15 @@ using namespace cv;
 //#define DBG_OUTLINE_TRACKER
 //#define DBG_GREEDY_TRACKER
 
-void PuReST::calculateHistogram(const cv::Mat& in, cv::Mat& histogram, const int& bins, const Mat& mask)
+void PuReST::calculateHistogram(
+    const cv::Mat& in, cv::Mat& histogram, const int& bins, const Mat& mask)
 {
     int channels[] = { 0 };
     int histSize[] = { bins };
     float range[] = { 0, 256 };
     const float* ranges[] = { range };
-    calcHist(&in, 1, channels, mask, histogram, 1, histSize, ranges, true, false);
+    calcHist(
+        &in, 1, channels, mask, histogram, 1, histSize, ranges, true, false);
 }
 
 static std::vector<cv::Vec3b> getColors(int size)
@@ -71,7 +75,8 @@ static std::vector<cv::Vec3b> getColors(int size)
     return colors;
 }
 
-void PuReST::getThresholds(const Mat& input, const Mat& histogram, const Pupil& pupil, int& lowTh, int& highTh, Mat& bright, Mat& dark)
+void PuReST::getThresholds(const Mat& input, const Mat& histogram,
+    const Pupil& pupil, int& lowTh, int& highTh, Mat& bright, Mat& dark)
 {
     int th;
     float area, acc;
@@ -81,8 +86,7 @@ void PuReST::getThresholds(const Mat& input, const Mat& histogram, const Pupil& 
     area = 0.05f * input.rows * input.cols;
     for (th = histogram.rows - 1; th > 0; th--) {
         acc += histogram.ptr<float>(th)[0];
-        if (acc > area)
-            break;
+        if (acc > area) break;
     }
     highTh = th;
 
@@ -91,8 +95,7 @@ void PuReST::getThresholds(const Mat& input, const Mat& histogram, const Pupil& 
     area = CV_PI * (0.5 * pupil.size.width) * (0.5 * pupil.size.height);
     for (th = 0; th < histogram.rows; th++) {
         acc += histogram.ptr<float>(th)[0];
-        if (acc > area)
-            break;
+        if (acc > area) break;
     }
     lowTh = th;
 
@@ -106,9 +109,9 @@ void PuReST::getThresholds(const Mat& input, const Mat& histogram, const Pupil& 
     dilate(dark, dark, dilateKernel);
     erode(dark, dark, openKernel);
 
-    //Mat glintCandidates;
-    //bitwise_and(bright, dark, glintCandidates);
-    //imshow("glints", glintCandidates);
+    // Mat glintCandidates;
+    // bitwise_and(bright, dark, glintCandidates);
+    // imshow("glints", glintCandidates);
 
 #ifdef DBG_HIST
     float hmax = 0;
@@ -132,10 +135,10 @@ void PuReST::getThresholds(const Mat& input, const Mat& histogram, const Pupil& 
 #endif
 }
 
-void PuReST::generateCombinations(const std::vector<GreedyCandidate>& seeds, std::vector<GreedyCandidate>& candidates, const int length)
+void PuReST::generateCombinations(const std::vector<GreedyCandidate>& seeds,
+    std::vector<GreedyCandidate>& candidates, const int length)
 {
-    if (length > seeds.size())
-        return;
+    if (length > seeds.size()) return;
 
     vector<bool> v(seeds.size());
     fill(v.end() - length, v.end(), true);
@@ -151,7 +154,9 @@ void PuReST::generateCombinations(const std::vector<GreedyCandidate>& seeds, std
     } while (next_permutation(v.begin(), v.end()));
 }
 
-bool PuReST::trackOutline(const cv::Mat& outlineTrackerEdges, const Pupil& basePupil, Pupil& pupil, const float& localScalingRatio, const float& minOutlineConfidence)
+bool PuReST::trackOutline(const cv::Mat& outlineTrackerEdges,
+    const Pupil& basePupil, Pupil& pupil, const float& localScalingRatio,
+    const float& minOutlineConfidence)
 {
     vector<Point> edges;
 
@@ -166,7 +171,8 @@ bool PuReST::trackOutline(const cv::Mat& outlineTrackerEdges, const Pupil& baseP
 #endif
 
     // Track previous outline
-    float edgeRatio = edgeRatioConfidence(outlineTrackerEdges, basePupil, edges);
+    float edgeRatio
+        = edgeRatioConfidence(outlineTrackerEdges, basePupil, edges);
 #ifdef DBG_OUTLINE_TRACKER
     for (auto e = edges.begin(); e != edges.end(); e++)
         dbgOutline.at<Vec3b>(e->y, e->x) = Vec3b(0, 0, 255);
@@ -176,7 +182,8 @@ bool PuReST::trackOutline(const cv::Mat& outlineTrackerEdges, const Pupil& baseP
     Pupil outlineTracker;
     if (edges.size() > 5 && edgeRatio > minOutlineConfidence) {
         outlineTracker = fitEllipse(edges);
-        edgeRatio = edgeRatioConfidence(outlineTrackerEdges, outlineTracker, edges);
+        edgeRatio
+            = edgeRatioConfidence(outlineTrackerEdges, outlineTracker, edges);
 #ifdef DBG_OUTLINE_TRACKER
         for (auto e = edges.begin(); e != edges.end(); e++)
             dbgOutline.at<Vec3b>(e->y, e->x) = Vec3b(0, 255, 255);
@@ -184,15 +191,19 @@ bool PuReST::trackOutline(const cv::Mat& outlineTrackerEdges, const Pupil& baseP
 #endif
         if (edges.size() > 5 && edgeRatio > minOutlineConfidence) {
             outlineTracker = fitEllipse(edges);
-            outlineTracker.confidence = confidence(input, outlineTracker, edges);
+            outlineTracker.confidence
+                = confidence(input, outlineTracker, edges);
 #ifdef DBG_OUTLINE_TRACKER
             for (auto e = edges.begin(); e != edges.end(); e++)
                 dbgOutline.at<Vec3b>(e->y, e->x) = Vec3b(0, 255, 0);
             imshow("Outline Tracker", dbgOutline);
 #endif
 
-            // We must compare in the full frame coordinate system because of the dynamic downscaling
-            float majorRatio = ((1.0f / localScalingRatio) * outlineTracker.majorAxis()) / outlineSeedPupil.majorAxis();
+            // We must compare in the full frame coordinate system because of
+            // the dynamic downscaling
+            float majorRatio
+                = ((1.0f / localScalingRatio) * outlineTracker.majorAxis())
+                / outlineSeedPupil.majorAxis();
 
             if (outlineTracker.valid() && majorRatio < 1.05f) {
                 pupil = outlineTracker;
@@ -206,7 +217,9 @@ bool PuReST::trackOutline(const cv::Mat& outlineTrackerEdges, const Pupil& baseP
     return false;
 }
 
-bool PuReST::greedySearch(const cv::Mat& greedyDetectorEdges, const Pupil& basePupil, const cv::Mat& dark, const cv::Mat& bright, Pupil& pupil, const float& localMinPupilDiameterPx)
+bool PuReST::greedySearch(const cv::Mat& greedyDetectorEdges,
+    const Pupil& basePupil, const cv::Mat& dark, const cv::Mat& bright,
+    Pupil& pupil, const float& localMinPupilDiameterPx)
 {
 #ifdef DBG_GREEDY_TRACKER
     Mat dbgGreedy;
@@ -215,7 +228,8 @@ bool PuReST::greedySearch(const cv::Mat& greedyDetectorEdges, const Pupil& baseP
 
     vector<Vec4i> hierarchy;
     vector<vector<Point>> curves;
-    findContours(greedyDetectorEdges, curves, hierarchy, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
+    findContours(greedyDetectorEdges, curves, hierarchy, cv::RETR_LIST,
+        cv::CHAIN_APPROX_NONE);
     for (auto c = curves.begin(); c != curves.end();) {
         if (c->size() < 5)
             c = curves.erase(c);
@@ -242,8 +256,7 @@ bool PuReST::greedySearch(const cv::Mat& greedyDetectorEdges, const Pupil& baseP
     for (int i = 0; i < curves.size(); i++) {
         GreedyCandidate c(curves[i]);
 
-        if (c.maxGap > 1.25 * basePupil.majorAxis())
-            continue;
+        if (c.maxGap > 1.25 * basePupil.majorAxis()) continue;
 
         float good = 0;
         float regular = 0;
@@ -260,18 +273,14 @@ bool PuReST::greedySearch(const cv::Mat& greedyDetectorEdges, const Pupil& baseP
             }
         }
 
-        if (good > bad && good > regular)
-            candidates.push_back(std::move(c));
+        if (good > bad && good > regular) candidates.push_back(std::move(c));
     }
 
-    if (candidates.size() == 0)
-        return false;
+    if (candidates.size() == 0) return false;
 
     // Sort by maxGap
     sort(candidates.begin(), candidates.end(),
-        [](auto& a, auto& b) {
-            return a.maxGap > b.maxGap;
-        });
+        [](auto& a, auto& b) { return a.maxGap > b.maxGap; });
 
     while (candidates.size() > 5)
         candidates.pop_back();
@@ -285,28 +294,25 @@ bool PuReST::greedySearch(const cv::Mat& greedyDetectorEdges, const Pupil& baseP
     }
     resize(dbgGreedy, dbgGreedy, Size(), 4, 4, INTER_AREA);
     imshow("Greedy Tracker Seeds", dbgGreedy);
-    //waitKey(0);
+    // waitKey(0);
 #endif
 
     vector<GreedyCandidate> combined;
     for (int length = 1; length <= candidates.size(); length++)
         generateCombinations(candidates, combined, length);
-    candidates.insert(candidates.end(), make_move_iterator(combined.begin()), make_move_iterator(combined.end()));
+    candidates.insert(candidates.end(), make_move_iterator(combined.begin()),
+        make_move_iterator(combined.end()));
 
     Pupil greedyPupil;
     float minCurvatureRatio = 0.198912f; // (1-cos(22.5))/sin(22.5)
     for (auto c = candidates.begin(); c != candidates.end(); c++) {
-        if (c->hull.size() < 5)
-            continue;
+        if (c->hull.size() < 5) continue;
         Pupil p = fitEllipse(c->hull);
-        if (p.majorAxis() < localMinPupilDiameterPx)
-            continue;
+        if (p.majorAxis() < localMinPupilDiameterPx) continue;
         float aspectRatio = p.minorAxis() / (float)p.majorAxis();
-        if (aspectRatio < minCurvatureRatio)
-            continue;
+        if (aspectRatio < minCurvatureRatio) continue;
         p.confidence = outlineContrastConfidence(input, p);
-        if (p.confidence > greedyPupil.confidence)
-            greedyPupil = p;
+        if (p.confidence > greedyPupil.confidence) greedyPupil = p;
     }
 
     if (greedyPupil.valid(0.66f)) {
@@ -323,10 +329,11 @@ bool PuReST::greedySearch(const cv::Mat& greedyDetectorEdges, const Pupil& baseP
     return false;
 }
 
-void PuReST::track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupil, TrackingParameters params)
+void PuReST::track(const cv::Mat& frame, const Pupil& previousPupil,
+    Pupil& pupil, TrackingParameters params)
 {
     baseSize = { frame.cols, frame.rows };
-    //baseSize = { 320, 240 };
+    // baseSize = { 320, 240 };
     pupil.clear();
 
     init(frame);
@@ -334,13 +341,14 @@ void PuReST::track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupi
     // First we get the search region in the frame coordinate system
     Rect frameRect = { 0, 0, frame.cols, frame.rows };
     // TODO: make this dependent on the time difference from previous pupil
-    double trackingRectHalfSide = max<int>(previousPupil.size.width, previousPupil.size.height);
+    double trackingRectHalfSide
+        = max<int>(previousPupil.size.width, previousPupil.size.height);
     Point2f delta(trackingRectHalfSide, trackingRectHalfSide);
-    Rect trackingRect = Rect(previousPupil.center - delta, previousPupil.center + delta);
+    Rect trackingRect
+        = Rect(previousPupil.center - delta, previousPupil.center + delta);
     trackingRect &= frameRect;
 
-    if (trackingRect.width < 10 || trackingRect.height < 10)
-        return;
+    if (trackingRect.width < 10 || trackingRect.height < 10) return;
 
     float localScalingRatio = scalingRatio;
     Size scaledSize = trackingRect.size();
@@ -350,21 +358,26 @@ void PuReST::track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupi
     // If the resulting rect is too large (e.g., due to a large pupil),
     // we employ a different scale to guarantee runtime
     Size2f maxSize = { 100.f, 100.f };
-    if (scaledSize.width > maxSize.width || scaledSize.height > maxSize.height) {
-        float r = std::min<float>(maxSize.width / trackingRect.width, maxSize.height / trackingRect.height);
+    if (scaledSize.width > maxSize.width
+        || scaledSize.height > maxSize.height) {
+        float r = std::min<float>(maxSize.width / trackingRect.width,
+            maxSize.height / trackingRect.height);
         localScalingRatio = r;
     }
 
-    estimateParameters(localScalingRatio * frame.rows, localScalingRatio * frame.cols);
+    estimateParameters(
+        localScalingRatio * frame.rows, localScalingRatio * frame.cols);
     if (params.userMinPupilDiameterPx > 0)
         minPupilDiameterPx = localScalingRatio * params.userMinPupilDiameterPx;
     if (params.userMaxPupilDiameterPx > 0)
         maxPupilDiameterPx = localScalingRatio * params.userMaxPupilDiameterPx;
 
     /*
-	 * From here on, we are in the resulting roi scaled to our base size coordinates
-	 */
-    resize(frame(trackingRect), input, Size(), localScalingRatio, localScalingRatio, cv::INTER_LINEAR);
+     * From here on, we are in the resulting roi scaled to our base size
+     * coordinates
+     */
+    resize(frame(trackingRect), input, Size(), localScalingRatio,
+        localScalingRatio, cv::INTER_LINEAR);
 
     // Setup for Canny
     workingSize = { input.cols, input.rows };
@@ -402,23 +415,28 @@ void PuReST::track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupi
     Mat outlineTrackerEdges = detectedEdges.clone();
     outlineTrackerEdges.setTo(0, bright);
     outlineTrackerEdges.setTo(0, 255 - dark);
-    if (trackOutline(outlineTrackerEdges, basePupil, pupil, localScalingRatio)) {
+    if (trackOutline(
+            outlineTrackerEdges, basePupil, pupil, localScalingRatio)) {
         pupil.resize(1.0 / localScalingRatio);
         pupil.shift(Point2f(trackingRect.tl()));
         return;
     }
 
     Mat greedyDetectorEdges = detectedEdges.clone();
-    if (greedySearch(greedyDetectorEdges, basePupil, dark, bright, pupil, localScalingRatio * minPupilDiameterPx)) {
+    if (greedySearch(greedyDetectorEdges, basePupil, dark, bright, pupil,
+            localScalingRatio * minPupilDiameterPx)) {
         pupil.resize(1.0 / localScalingRatio);
         pupil.shift(Point2f(trackingRect.tl()));
         return;
     }
 
-    //PuRe::run(frame, roi, pupil, -1, -1);
+    // PuRe::run(frame, roi, pupil, -1, -1);
 }
 
-float PuReST::confidence(const cv::Mat frame, const Pupil& pupil, const std::vector<cv::Point> points)
+float PuReST::confidence(const cv::Mat frame, const Pupil& pupil,
+    const std::vector<cv::Point> points)
 {
-    return 0.34 * outlineContrastConfidence(frame, pupil) + 0.33 * aspectRatioConfidence(pupil) + 0.33 * angularSpreadConfidence(points, pupil.center);
+    return 0.34 * outlineContrastConfidence(frame, pupil)
+        + 0.33 * aspectRatioConfidence(pupil)
+        + 0.33 * angularSpreadConfidence(points, pupil.center);
 }
