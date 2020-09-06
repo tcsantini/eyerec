@@ -1,8 +1,8 @@
-#ifndef PUREST_H
-#define PUREST_H
+#ifndef CPP_INCLUDE_EYEREC_PUREST_H
+#define CPP_INCLUDE_EYEREC_PUREST_H
 
-#include "PuRe.hpp"
-#include "PupilTrackingMethod.hpp"
+#include "eyerec/PuRe.hpp"
+#include "eyerec/PupilTrackingMethod.hpp"
 
 class GreedyCandidate {
 
@@ -72,4 +72,4 @@ private:
         const std::vector<cv::Point> points);
 };
 
-#endif // PUREST_H
+#endif // CPP_INCLUDE_EYEREC_PUREST_H

@@ -24,8 +24,18 @@ export OpenCV_DIR=<opencv-path>
 mkdir build
 cd build
 cmake ../
-make -j 8
-./track-pupil <algorithm-name> <path-to-video>
+make install -j 8
+./cpp/examples/track-pupil <algorithm-name> <path-to-video>
+```
+
+3. The above command will also install the library, headers, and CMake config
+   files, supporting cmake find\_package (e.g., see the [examples](cpp/examples/CMakeLists.txt)).
+   After setting eyerec_DIR or CMAKE_PREFIX_PATH accordingly, you can use this library in your project roughly so:
+
+```cmake
+find_package(eyerec REQUIRED)
+add_executable(your-app ...)
+target_link_libraries(your-app eyerec::eyerec)
 ```
 
 ## Available Methods

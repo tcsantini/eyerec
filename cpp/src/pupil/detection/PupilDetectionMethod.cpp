@@ -1,4 +1,6 @@
-#include "PupilDetectionMethod.hpp"
+#include "eyerec/PupilDetectionMethod.hpp"
+
+#include "common/ocv_utils.hpp"
 
 using namespace std;
 using namespace cv;
@@ -281,4 +283,22 @@ float PupilDetectionMethod::ellipseDistanceConfidence(const Pupil& pupil,
         validPoints.push_back(edgePoints[i]);
     }
     return validPoints.size() / static_cast<float>(edgePoints.size());
+}
+
+static void sanitizeROI(const cv::Mat& frame, cv::Rect& roi)
+{
+    cv::Rect froi = cv::Rect(0, 0, frame.cols - 1, frame.rows - 1);
+    roi &= froi;
+    if (roi.area() < 10) {
+        roi = froi;
+    }
+}
+
+Pupil PupilDetectionMethod::detect(const cv::Mat& frame, DetectionParameters params)
+{
+    sanitizeROI(frame, params.roi);
+    Pupil pupil = implDetect(frame, params);
+    if (params.provideConfidence && !hasConfidence())
+        pupil.confidence = outlineContrastConfidence(frame, pupil);
+    return pupil;
 }

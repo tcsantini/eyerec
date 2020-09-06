@@ -1,5 +1,5 @@
-#ifndef PURE_H
-#define PURE_H
+#ifndef CPP_INCLUDE_EYEREC_PURE_H
+#define CPP_INCLUDE_EYEREC_PURE_H
 
 #include <bitset>
 #include <random>
@@ -8,7 +8,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "PupilDetectionMethod.hpp"
+#include "eyerec/PupilDetectionMethod.hpp"
 
 class PupilCandidate {
 public:
@@ -209,4 +209,4 @@ protected:
     int minPupilDiameterPx;
 };
 
-#endif // PURE_H
+#endif // CPP_INCLUDE_EYEREC_PURE_H

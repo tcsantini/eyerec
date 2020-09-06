@@ -1,5 +1,5 @@
-#ifndef PUPILTRACKINGMETHOD_H
-#define PUPILTRACKINGMETHOD_H
+#ifndef CPP_INCLUDE_EYEREC_PUPILTRACKINGMETHOD_H
+#define CPP_INCLUDE_EYEREC_PUPILTRACKINGMETHOD_H
 
 #include <deque>
 #include <memory>
@@ -8,7 +8,7 @@
 
 #include "opencv2/core.hpp"
 
-#include "PupilDetectionMethod.hpp"
+#include "eyerec/PupilDetectionMethod.hpp"
 
 struct TrackingParameters : public DetectionParameters {
     // Maximum time to keep found pupils in tracking buffer
@@ -60,4 +60,4 @@ private:
         const Timestamp& ts, const TrackingParameters& oldParams);
 };
 
-#endif // PUPILTRACKINGMETHOD_H
+#endif // CPP_INCLUDE_EYEREC_PUPILTRACKINGMETHOD_H

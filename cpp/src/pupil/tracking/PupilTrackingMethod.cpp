@@ -1,4 +1,4 @@
-#include "PupilTrackingMethod.hpp"
+#include "eyerec/PupilTrackingMethod.hpp"
 
 using namespace std;
 using namespace cv;

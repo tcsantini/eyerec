@@ -1,10 +1,10 @@
-#include "PuRe.hpp"
-
 #include <climits>
 #include <iostream>
 #include <memory>
 
 #include <opencv2/highgui.hpp>
+
+#include "eyerec/PuRe.hpp"
 
 //#define SAVE_ILLUSTRATION
 

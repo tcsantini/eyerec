@@ -1,9 +1,9 @@
-#ifndef ER_CPP_PUPIL_DETECTION_PUPIL_H
-#define ER_CPP_PUPIL_DETECTION_PUPIL_H
+#ifndef CPP_INCLUDE_EYEREC_PUPIL_HPP
+#define CPP_INCLUDE_EYEREC_PUPIL_HPP
 
 #include <opencv2/core.hpp>
 
-#include "utils.h"
+#include "eyerec/Timestamp.hpp"
 
 class Pupil : public cv::RotatedRect {
 public:
@@ -98,4 +98,4 @@ public:
     Timestamp ts;
 };
 
-#endif // ER_CPP_PUPIL_DETECTION_PUPIL_H
+#endif // CPP_INCLUDE_EYEREC_PUPIL_HPP

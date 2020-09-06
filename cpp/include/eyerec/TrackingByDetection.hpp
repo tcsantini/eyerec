@@ -1,7 +1,7 @@
-#ifndef TRACKINGBYDETECTION_H
-#define TRACKINGBYDETECTION_H
+#ifndef CPP_INCLUDE_EYEREC_TRACKINGBYDETECTION_H
+#define CPP_INCLUDE_EYEREC_TRACKINGBYDETECTION_H
 
-#include "PupilTrackingMethod.hpp"
+#include "eyerec/PupilTrackingMethod.hpp"
 
 template <class T>
 class TrackingByDetection : public PupilTrackingMethod {
@@ -29,4 +29,4 @@ public:
     }
 };
 
-#endif // TRACKINGBYDETECTION_H
+#endif // CPP_INCLUDE_EYEREC_TRACKINGBYDETECTION_H

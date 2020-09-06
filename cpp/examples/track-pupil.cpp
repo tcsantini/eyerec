@@ -2,9 +2,9 @@
 
 #include <opencv2/highgui.hpp>
 
-#include "PuRe.hpp"
-#include "PuReST.hpp"
-#include "TrackingByDetection.hpp"
+#include "eyerec/PuRe.hpp"
+#include "eyerec/PuReST.hpp"
+#include "eyerec/TrackingByDetection.hpp"
 
 using namespace std;
 using namespace chrono;

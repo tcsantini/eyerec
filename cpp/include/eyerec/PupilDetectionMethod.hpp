@@ -1,5 +1,5 @@
-#ifndef PUPILDETECTIONMETHOD_H
-#define PUPILDETECTIONMETHOD_H
+#ifndef CPP_INCLUDE_EYEREC_PUPILDETECTIONMETHOD_H
+#define CPP_INCLUDE_EYEREC_PUPILDETECTIONMETHOD_H
 
 #include <bitset>
 #include <deque>
@@ -9,8 +9,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include "../common/ocv_utils.hpp"
-#include "Pupil.h"
+#include "eyerec/Pupil.hpp"
 
 struct DetectionParameters {
     // Only search within this region of interest (but the whole frame is used
@@ -27,14 +26,7 @@ class PupilDetectionMethod {
 public:
     virtual ~PupilDetectionMethod() = default;
 
-    Pupil detect(const cv::Mat& frame, DetectionParameters params)
-    {
-        sanitizeROI(frame, params.roi);
-        Pupil pupil = implDetect(frame, params);
-        if (params.provideConfidence && !hasConfidence())
-            pupil.confidence = outlineContrastConfidence(frame, pupil);
-        return pupil;
-    }
+    Pupil detect(const cv::Mat& frame, DetectionParameters params);
 
     virtual bool hasConfidence() = 0;
     virtual bool hasCoarseLocation() = 0;
@@ -61,15 +53,6 @@ public:
 protected:
     virtual Pupil implDetect(const cv::Mat& frame, DetectionParameters params)
         = 0;
-
-    void sanitizeROI(const cv::Mat& frame, cv::Rect& roi)
-    {
-        cv::Rect froi = cv::Rect(0, 0, frame.cols - 1, frame.rows - 1);
-        roi &= froi;
-        if (roi.area() < 10) {
-            roi = froi;
-        }
-    }
 };
 
-#endif // PUPILDETECTIONMETHOD_H
+#endif // CPP_INCLUDE_EYEREC_PUPILDETECTIONMETHOD_H

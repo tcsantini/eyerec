@@ -42,7 +42,7 @@
  * ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#include "PuReST.hpp"
+#include "eyerec/PuReST.hpp"
 
 using namespace std;
 using namespace cv;
