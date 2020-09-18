@@ -58,7 +58,6 @@ int main(int argc, char* argv[])
     // Iterate over frames
     Mat gray;
     Mat bgr;
-    Pupil pupil;
     TrackingParameters params;
     Timestamp timestamp;
     cout << "x, y, width, height, angle, confidence, runtime_ms," << endl;
@@ -77,7 +76,7 @@ int main(int argc, char* argv[])
         }
 
         auto start = high_resolution_clock::now();
-        tracker->detectAndTrack(timestamp, gray, pupil, params);
+        Pupil pupil = tracker->detectAndTrack(timestamp, gray, params);
         auto runtime_ns
             = duration_cast<nanoseconds>(high_resolution_clock::now() - start)
                   .count();

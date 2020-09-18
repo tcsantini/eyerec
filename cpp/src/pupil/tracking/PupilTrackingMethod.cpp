@@ -20,8 +20,8 @@ void PupilTrackingMethod::registerPupil(const Timestamp& ts, Pupil& pupil)
         previousPupil = TrackedPupil();
 }
 
-void PupilTrackingMethod::detectAndTrack(const Timestamp& ts,
-    const cv::Mat& frame, Pupil& pupil, TrackingParameters params)
+Pupil PupilTrackingMethod::detectAndTrack(
+    const Timestamp& ts, const cv::Mat& frame, TrackingParameters params)
 {
     cv::Size frameSize = { frame.cols, frame.rows };
     if (expectedFrameSize != frameSize) {
@@ -38,41 +38,41 @@ void PupilTrackingMethod::detectAndTrack(const Timestamp& ts,
             break;
     }
 
-    pupil.clear();
-
     // Detection and tracking logic
-    Pupil alternative;
+    Pupil detectedPupil;
+    Pupil trackedPupil;
     if (previousPupil.hasNoConfidence()) {
 
         // Detect
-
 #ifdef EXPERIMENTAL_TRACKING
-        pupil = detect(frame, estimateTemporalROI(ts, params));
+        detectedPupil = detect(frame, estimateTemporalROI(ts, params));
         // TODO: keep?
         // If detection failed, try tracking with old (e.g., during blinks)
-        if (pupil.confidence < minDetectionConfidence
+        if (detectedPupil.confidence < minDetectionConfidence
             && !previousPupils.empty()) {
-            track(frame, previousPupils.back(), alternative, params);
-            if (alternative.confidence > pupil.confidence) pupil = alternative;
+            track(frame, previousPupils.back(), trackedPupil, params);
         }
 #else
-        pupil = detect(frame, params);
+        detectedPupil = detect(frame, params);
 #endif
 
     } else {
 
         // Track
-        track(frame, previousPupil, pupil, params);
+        track(frame, previousPupil, trackedPupil, params);
 
 #ifdef EXPERIMENTAL_TRACKING
         // TODO: keep?
         // If tracking failed, try detection again
-        if (pupil.confidence < minDetectionConfidence) {
-            alternative = detect(frame, estimateTemporalROI(ts, params));
-            if (alternative.confidence > pupil.confidence) pupil = alternative;
+        if (trackedPupil.confidence < minDetectionConfidence) {
+            detectedPupil = detect(frame, estimateTemporalROI(ts, params));
         }
 #endif
     }
+
+    Pupil pupil = detectedPupil.confidence > trackedPupil.confidence
+        ? detectedPupil
+        : trackedPupil;
 
     // if limits have not been set (i.e., <= 0), we don't do the size checking
     bool fitsMaxSize = params.userMaxPupilDiameterPx <= 0
@@ -82,6 +82,8 @@ void PupilTrackingMethod::detectAndTrack(const Timestamp& ts,
     if (!fitsMaxSize || !fitsMinSize) pupil.confidence = 0;
 
     registerPupil(ts, pupil);
+
+    return pupil;
 }
 
 Pupil PupilTrackingMethod::detect(

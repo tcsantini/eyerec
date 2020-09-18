@@ -22,8 +22,8 @@ public:
     virtual ~PupilTrackingMethod() = default;
 
     // Tracking and detection logic
-    virtual void detectAndTrack(const Timestamp& ts, const cv::Mat& frame,
-        Pupil& pupil, TrackingParameters params);
+    virtual Pupil detectAndTrack(
+        const Timestamp& ts, const cv::Mat& frame, TrackingParameters params);
 
     virtual std::string description() = 0;
 

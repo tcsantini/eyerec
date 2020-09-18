@@ -7,10 +7,10 @@ template <class T>
 class TrackingByDetection : public PupilTrackingMethod {
 
 public:
-    void detectAndTrack(const Timestamp& ts, const cv::Mat& frame, Pupil& pupil,
+    Pupil detectAndTrack(const Timestamp& ts, const cv::Mat& frame,
         TrackingParameters params) override
     {
-        track(frame, Pupil(), pupil, params);
+        return detect(frame, params);
     };
     void track(const cv::Mat& frame, const Pupil& previousPupil, Pupil& pupil,
         TrackingParameters params) override
